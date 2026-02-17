@@ -1,0 +1,138 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  /* Kasa brand colors as Tailwind tokens */
+  --color-kasa-blue: #195c8c;
+  --color-kasa-dark: #061332;
+  --color-kasa-coral: #ef786a;
+  --color-kasa-teal: #3d8c8d;
+  --color-kasa-warm: #faf9f6;
+  --color-kasa-blue-100: #6493b3;
+  --color-kasa-blue-200: #3d779f;
+  --color-kasa-blue-400: #144a70;
+  --color-kasa-blue-500: #0e3854;
+}
+
+:root {
+  --radius: 0.625rem;
+  /* Kasa-branded light theme */
+  --background: #faf9f6;          /* Kasa warm white */
+  --foreground: #061332;           /* Kasa Black Pearl */
+  --card: #ffffff;
+  --card-foreground: #061332;
+  --popover: #ffffff;
+  --popover-foreground: #061332;
+  --primary: #195c8c;              /* Kasa Blue - primary brand */
+  --primary-foreground: #ffffff;
+  --secondary: #f0f4f7;            /* Light blue tint */
+  --secondary-foreground: #061332;
+  --muted: #f0f4f7;
+  --muted-foreground: #586176;     /* Kasa Black 300 */
+  --accent: #e8f0f6;               /* Very light Kasa blue */
+  --accent-foreground: #195c8c;
+  --destructive: #e23c00;          /* Kasa Error Orange */
+  --border: #e2e6eb;
+  --input: #e2e6eb;
+  --ring: #195c8c;                 /* Kasa Blue */
+  --chart-1: #195c8c;              /* Kasa Blue */
+  --chart-2: #3d8c8d;              /* Kasa Teal */
+  --chart-3: #ef786a;              /* Kasa Coral */
+  --chart-4: #6493b3;              /* Kasa Blue 100 */
+  --chart-5: #144a70;              /* Kasa Blue 400 */
+  /* Sidebar with Kasa Dark */
+  --sidebar: #061332;              /* Kasa Black Pearl */
+  --sidebar-foreground: #e8f0f6;
+  --sidebar-primary: #3d779f;      /* Kasa Blue 200 */
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #0e3854;       /* Kasa Blue 500 */
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #1a2547;
+  --sidebar-ring: #3d779f;
+}
+
+.dark {
+  --background: #061332;
+  --foreground: #e8f0f6;
+  --card: #0e1a3d;
+  --card-foreground: #e8f0f6;
+  --popover: #0e1a3d;
+  --popover-foreground: #e8f0f6;
+  --primary: #6493b3;
+  --primary-foreground: #061332;
+  --secondary: #1a2547;
+  --secondary-foreground: #e8f0f6;
+  --muted: #1a2547;
+  --muted-foreground: #acb0ba;
+  --accent: #1a2547;
+  --accent-foreground: #6493b3;
+  --destructive: #ef786a;
+  --border: rgba(255, 255, 255, 0.1);
+  --input: rgba(255, 255, 255, 0.15);
+  --ring: #3d779f;
+  --chart-1: #6493b3;
+  --chart-2: #6bafb4;
+  --chart-3: #ef786a;
+  --chart-4: #3d779f;
+  --chart-5: #195c8c;
+  --sidebar: #040e28;
+  --sidebar-foreground: #e8f0f6;
+  --sidebar-primary: #6493b3;
+  --sidebar-primary-foreground: #061332;
+  --sidebar-accent: #1a2547;
+  --sidebar-accent-foreground: #e8f0f6;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: #3d779f;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
