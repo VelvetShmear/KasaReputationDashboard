@@ -38,6 +38,33 @@ interface AirbnbSearchResult {
   url?: string;
 }
 
+// ---------- Name Matching ----------
+
+/**
+ * STRICT name matching: checks if an Airbnb listing is a plausible match for the hotel.
+ * We require at least one significant word from the hotel name to appear in the
+ * listing name. Common filler words are ignored.
+ *
+ * This is intentionally strict — it's better to show "No Airbnb data" than to
+ * show a random short-term rental that has nothing to do with the hotel.
+ * Most traditional hotels (Hilton, Marriott, Hyatt, etc.) are NOT on Airbnb.
+ */
+function isNameMatch(hotelName: string, listingName: string): boolean {
+  const stopWords = new Set([
+    'the', 'hotel', 'resort', 'inn', 'suites', 'suite', 'by', 'at', 'and',
+    'of', 'a', 'an', 'in', 'on', 'to', 'for', 'los', 'las', 'san', 'santa',
+  ]);
+  const hotelWords = hotelName
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((w) => w.length > 2 && !stopWords.has(w));
+  const listingLower = listingName.toLowerCase();
+
+  // At least one significant hotel-name word must appear in the listing name
+  const matchingWords = hotelWords.filter((w) => listingLower.includes(w));
+  return matchingWords.length >= 1;
+}
+
 // ---------- Search ----------
 
 async function searchAirbnb(
@@ -70,23 +97,25 @@ async function searchAirbnb(
     const results = data?.results || data?.data || [];
     if (!Array.isArray(results) || results.length === 0) return null;
 
-    // Try to find a match by name
-    const nameLower = hotelName.toLowerCase();
+    // STRICT matching: only accept listings whose name matches the hotel name.
+    // Do NOT fall back to results[0] — that would return a random Airbnb listing
+    // in the area (e.g., someone's apartment) which has nothing to do with the hotel.
     const matched = results.find((r: Record<string, unknown>) => {
-      const rName = (r.name as string || '').toLowerCase();
-      return rName.includes(nameLower) || nameLower.includes(rName);
+      const rName = (r.name as string) || '';
+      return isNameMatch(hotelName, rName);
     });
 
-    const best = matched || results[0];
-    if (!best) return null;
+    // If no name match found, return null — better to show "No Airbnb data"
+    // than to show a random short-term rental
+    if (!matched) return null;
 
     return {
-      id: String(best.id || best.listing_id || ''),
-      name: best.name as string,
-      city: best.city as string,
-      rating: best.rating as number || best.avgRating as number || null,
-      reviewsCount: best.reviewsCount as number || best.reviews_count as number || null,
-      url: best.url as string || (best.id ? `https://www.airbnb.com/rooms/${best.id}` : null),
+      id: String(matched.id || matched.listing_id || ''),
+      name: matched.name as string,
+      city: matched.city as string,
+      rating: (matched.rating as number) || (matched.avgRating as number) || null,
+      reviewsCount: (matched.reviewsCount as number) || (matched.reviews_count as number) || null,
+      url: (matched.url as string) || (matched.id ? `https://www.airbnb.com/rooms/${matched.id}` : null),
     } as AirbnbSearchResult;
   } catch (error) {
     console.error('Airbnb search error:', error);
@@ -170,7 +199,7 @@ export async function fetchAirbnbReviews(
     // Step 1: Search for the listing
     const found = await searchAirbnb(hotelName, city);
     if (!found || !found.id) {
-      result.error = 'Property not found on Airbnb. Note: Many hotels do not list on Airbnb.';
+      result.error = 'No matching Airbnb listing found. Most traditional hotels do not list on Airbnb.';
       return result;
     }
 

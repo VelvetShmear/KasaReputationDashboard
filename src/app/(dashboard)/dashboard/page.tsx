@@ -280,10 +280,9 @@ export default function DashboardPage() {
           <CardContent>
             <div className="space-y-3">
               {topHotels.map((hotel, index) => (
-                <Link
+                <div
                   key={hotel.id}
-                  href={`/hotels/${hotel.id}`}
-                  className="flex items-center justify-between p-3 rounded-lg hover:bg-muted transition-colors"
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/30"
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-sm font-bold text-muted-foreground w-6">
@@ -297,7 +296,7 @@ export default function DashboardPage() {
                   <div className={`text-lg font-bold ${getScoreColor(hotel.weighted_average)}`}>
                     {formatScore(hotel.weighted_average)}
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
           </CardContent>
