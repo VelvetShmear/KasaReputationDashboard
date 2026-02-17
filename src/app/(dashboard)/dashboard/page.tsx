@@ -253,7 +253,7 @@ export default function DashboardPage() {
         {/* Channel Coverage */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Channel Coverage & Avg Score</CardTitle>
+            <CardTitle className="text-base">Reviews by Channel</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="h-64">

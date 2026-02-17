@@ -11,6 +11,7 @@ interface HotelFormData {
   name: string;
   city: string;
   website_url: string;
+  google_url: string;
   tripadvisor_url: string;
   expedia_url: string;
   booking_url: string;
@@ -30,6 +31,7 @@ export function HotelForm({ onSubmit, initialData, trigger, title = 'Add Hotel' 
     name: initialData?.name || '',
     city: initialData?.city || '',
     website_url: initialData?.website_url || '',
+    google_url: initialData?.google_url || '',
     tripadvisor_url: initialData?.tripadvisor_url || '',
     expedia_url: initialData?.expedia_url || '',
     booking_url: initialData?.booking_url || '',
@@ -47,6 +49,7 @@ export function HotelForm({ onSubmit, initialData, trigger, title = 'Add Hotel' 
         name: '',
         city: '',
         website_url: '',
+        google_url: '',
         tripadvisor_url: '',
         expedia_url: '',
         booking_url: '',
@@ -99,6 +102,15 @@ export function HotelForm({ onSubmit, initialData, trigger, title = 'Add Hotel' 
               value={formData.website_url}
               onChange={(e) => setFormData((d) => ({ ...d, website_url: e.target.value }))}
               placeholder="https://..."
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="google">Google Maps URL</Label>
+            <Input
+              id="google"
+              value={formData.google_url}
+              onChange={(e) => setFormData((d) => ({ ...d, google_url: e.target.value }))}
+              placeholder="https://maps.google.com/..."
             />
           </div>
           <div className="space-y-2">

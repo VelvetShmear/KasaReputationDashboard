@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Search, RefreshCw, ArrowUpDown, Hotel, Trash2, AlertTriangle, CheckCircle2, XCircle, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { Label } from '@/components/ui/label';
@@ -53,6 +54,7 @@ export default function HotelsPage() {
   const [apiKeyStatus, setApiKeyStatus] = useState<ApiKeyStatus | null>(null);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [selectedHotels, setSelectedHotels] = useState<Set<string>>(new Set());
   const router = useRouter();
   const supabase = createClient();
 
@@ -166,7 +168,7 @@ export default function HotelsPage() {
     loadHotels();
   }
 
-  async function handleAddHotel(data: { name: string; city: string; website_url: string; tripadvisor_url: string; expedia_url: string; booking_url: string }) {
+  async function handleAddHotel(data: { name: string; city: string; website_url: string; google_url: string; tripadvisor_url: string; expedia_url: string; booking_url: string }) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -175,6 +177,7 @@ export default function HotelsPage() {
       name: data.name ? toTitleCase(data.name) : data.name,
       city: data.city ? toTitleCase(data.city) : null,
       website_url: data.website_url || null,
+      google_url: data.google_url || null,
       tripadvisor_url: data.tripadvisor_url || null,
       expedia_url: data.expedia_url || null,
       booking_url: data.booking_url || null,
@@ -198,7 +201,45 @@ export default function HotelsPage() {
     } else {
       toast.success('Hotel deleted');
       setHotels((prev) => prev.filter((h) => h.id !== hotelId));
+      setSelectedHotels((prev) => { const next = new Set(prev); next.delete(hotelId); return next; });
     }
+  }
+
+  async function handleBulkDelete() {
+    if (selectedHotels.size === 0) return;
+    if (!confirm(`Are you sure you want to delete ${selectedHotels.size} hotel${selectedHotels.size > 1 ? 's' : ''} and all their data?`)) return;
+
+    let deleted = 0;
+    let failed = 0;
+    for (const hotelId of selectedHotels) {
+      const { error } = await supabase.from('hotels').delete().eq('id', hotelId);
+      if (error) {
+        failed++;
+      } else {
+        deleted++;
+      }
+    }
+
+    if (deleted > 0) {
+      toast.success(`Deleted ${deleted} hotel${deleted > 1 ? 's' : ''}`);
+      setHotels((prev) => prev.filter((h) => !selectedHotels.has(h.id)));
+      setSelectedHotels(new Set());
+    }
+    if (failed > 0) {
+      toast.error(`Failed to delete ${failed} hotel${failed > 1 ? 's' : ''}`);
+    }
+  }
+
+  function toggleSelectHotel(hotelId: string) {
+    setSelectedHotels((prev) => {
+      const next = new Set(prev);
+      if (next.has(hotelId)) {
+        next.delete(hotelId);
+      } else {
+        next.add(hotelId);
+      }
+      return next;
+    });
   }
 
   async function handleFetchAllReviews() {
@@ -326,6 +367,16 @@ export default function HotelsPage() {
 
     return sortDir === 'asc' ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number);
   });
+
+  const allSelected = filteredHotels.length > 0 && selectedHotels.size === filteredHotels.length;
+
+  function toggleSelectAll() {
+    if (allSelected) {
+      setSelectedHotels(new Set());
+    } else {
+      setSelectedHotels(new Set(filteredHotels.map((h) => h.id)));
+    }
+  }
 
   function handleSort(field: SortField) {
     if (sortField === field) {
@@ -556,12 +607,36 @@ export default function HotelsPage() {
                   )}
                 </div>
 
+                {/* Bulk Delete Bar */}
+                {selectedHotels.size > 0 && (
+                  <div className="flex items-center justify-between p-3 mb-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+                    <span className="text-sm font-medium text-destructive">
+                      {selectedHotels.size} hotel{selectedHotels.size > 1 ? 's' : ''} selected
+                    </span>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleBulkDelete}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Selected
+                    </Button>
+                  </div>
+                )}
+
                 {/* Table */}
                 <Card>
                   <ScrollArea className="w-full">
                     <Table>
                       <TableHeader>
                         <TableRow>
+                          <TableHead className="w-10">
+                            <Checkbox
+                              checked={allSelected}
+                              onCheckedChange={toggleSelectAll}
+                              aria-label="Select all hotels"
+                            />
+                          </TableHead>
                           <SortableHeader field="name">Hotel Name</SortableHeader>
                           <SortableHeader field="city">City</SortableHeader>
                           <SortableHeader field="google">Google</SortableHeader>
@@ -577,9 +652,16 @@ export default function HotelsPage() {
                         {filteredHotels.map((hotel) => (
                           <TableRow
                             key={hotel.id}
-                            className="cursor-pointer hover:bg-muted/50"
+                            className={`cursor-pointer hover:bg-muted/50 ${selectedHotels.has(hotel.id) ? 'bg-muted/30' : ''}`}
                             onClick={() => router.push(`/hotels/${hotel.id}`)}
                           >
+                            <TableCell onClick={(e) => e.stopPropagation()}>
+                              <Checkbox
+                                checked={selectedHotels.has(hotel.id)}
+                                onCheckedChange={() => toggleSelectHotel(hotel.id)}
+                                aria-label={`Select ${hotel.name}`}
+                              />
+                            </TableCell>
                             <TableCell className="font-medium">{hotel.name}</TableCell>
                             <TableCell className="text-muted-foreground">{hotel.city || '—'}</TableCell>
                             <TableCell>

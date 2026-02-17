@@ -51,7 +51,7 @@ export default function MethodologyPage() {
             <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
               <div>
                 <span className="font-medium">TripAdvisor</span>
-                <p className="text-sm text-muted-foreground">Native scale: 1-5 bubbles</p>
+                <p className="text-sm text-muted-foreground">Native scale: 1-5 stars</p>
               </div>
               <Badge variant="secondary">Score &times; 2.0</Badge>
             </div>
@@ -152,7 +152,7 @@ export default function MethodologyPage() {
                 Uses the Travel Advisor RapidAPI to search by hotel name + city via the auto-complete
                 endpoint, filtering for ACCOMMODATION type results. Resolves to a location ID, then
                 fetches individual reviews from <code className="text-xs bg-muted px-1 rounded">reviews/list</code> and
-                calculates the average rating (1-5 bubbles) from the returned sample. Total review count
+                calculates the average rating (1-5 stars) from the returned sample. Total review count
                 comes from the API&apos;s pagination metadata.
               </p>
             </div>
@@ -161,10 +161,11 @@ export default function MethodologyPage() {
               <h4 className="font-medium text-sm">Booking.com</h4>
               <p className="text-sm text-muted-foreground mt-1">
                 Uses the Booking.com RapidAPI (booking-com15). Searches via <code className="text-xs bg-muted px-1 rounded">searchDestination</code> to
-                find the hotel&apos;s destination ID. Fetches aggregate review score from <code className="text-xs bg-muted px-1 rounded">getHotelReviews</code> (returns
-                a 0-4 scale score, converted to 0-10 by multiplying by 2.5) and total review count
+                find the hotel&apos;s destination ID. The <code className="text-xs bg-muted px-1 rounded">getHotelReviews</code> endpoint
+                returns an internal score on a 0-4 scale, which is converted to Booking.com&apos;s
+                public-facing 0-10 scale (×2.5). Total review count comes
                 from <code className="text-xs bg-muted px-1 rounded">getHotelDetails</code>. Both API calls run in parallel
-                for speed.
+                for speed. No additional normalization is needed since the converted score is already on the 0-10 scale.
               </p>
             </div>
             <Separator />

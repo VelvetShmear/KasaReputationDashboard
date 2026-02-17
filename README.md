@@ -12,7 +12,7 @@ Next.js 16 (App Router) + TypeScript
 ├── Backend: Next.js API Routes
 ├── Database: Supabase (PostgreSQL + Row Level Security)
 ├── Auth: Supabase Auth (email/password + Google OAuth)
-├── Review APIs: Google Places API + RapidAPI (TripAdvisor, Booking.com, Expedia)
+├── Review APIs: Google Places API + RapidAPI (TripAdvisor, Booking.com, Expedia, Airbnb)
 ├── AI: Anthropic Claude (review theme analysis)
 └── Deployment: Vercel
 ```
@@ -50,7 +50,8 @@ src/
         ├── google-places.ts
         ├── tripadvisor.ts
         ├── booking.ts
-        └── expedia.ts
+        ├── expedia.ts
+        └── airbnb.ts
 ```
 
 ## APIs Used
@@ -61,25 +62,30 @@ src/
 | TripAdvisor | RapidAPI - TripAdvisor16 | Hotel search + details |
 | Booking.com | RapidAPI - Booking.com15 | Destination search + hotel details |
 | Expedia | RapidAPI - Hotels.com Provider | Region search; limited coverage |
+| Airbnb | RapidAPI - Airbnb13 | Property search + reviews (Stretch Goal) |
 | AI Analysis | Anthropic Claude (claude-sonnet-4-5-20250929) | Review theme extraction |
 
 ## Key Features
 
 - **Hotel Management**: CSV upload (bulk) + manual add; supports ~100+ hotels
-- **Multi-Channel Review Aggregation**: Google, TripAdvisor, Booking.com, Expedia
+- **Multi-Channel Review Aggregation**: Google, TripAdvisor, Booking.com, Expedia, Airbnb
 - **Score Normalization**: All scores normalized to 0–10 scale
 - **Weighted Average**: `Σ(normalized_score × review_count) / Σ(review_count)`
 - **Groups**: Create groups of hotels, compare aggregated scores
 - **Historical Tracking**: Each fetch creates a timestamped snapshot for trend charts
 - **AI Theme Analysis**: Claude-powered extraction of positive/negative review themes
-- **CSV Export**: Download all data with scores, review counts, and group memberships
+- **CSV & Excel Export**: Download all data with scores, review counts, and group memberships (CSV + XLSX)
+- **Date Range Filtering**: Filter review data by date range on both hotel list and detail views
+- **Bulk Hotel Management**: Select all / individual checkboxes for bulk delete operations
+- **Auto Hotel Name Resolution**: Google Places resolves full official hotel names (e.g., "Hyatt" → "Hyatt Centric Delfina Santa Monica")
+- **Parallel API Fetching**: Google fetches first for name resolution, then all other channels in parallel for speed
 - **Auth**: Email/password + Google OAuth, all data scoped per user via RLS
 
 ## Assumptions & Design Decisions
 
 ### Score Normalization
-- Google, TripAdvisor, Expedia: 1–5 scale × 2 → 0–10
-- Booking.com: Already 1–10 scale → no multiplication needed
+- Google, TripAdvisor, Airbnb: 1–5 scale × 2 → 0–10
+- Booking.com, Expedia: Already 1–10 scale → no multiplication needed
 
 ### Hotel Resolution
 - Hotels are matched by name + city text search on each platform
@@ -142,6 +148,14 @@ npx vercel
 ```
 
 Set the same environment variables in Vercel's project settings.
+
+## Stretch Goals Completed
+
+All three stretch goals from the assignment are implemented:
+
+1. **AI Review Theme Analysis** — Claude-powered extraction of positive/negative themes at the individual hotel level with mention counts and summaries
+2. **The Time Machine** — Date range filtering on both the hotels table and individual hotel detail pages, applied to review snapshots
+3. **Airbnb Reviews** — Full Airbnb channel integration via RapidAPI Airbnb13, including search, property matching, and review score extraction
 
 ## Shortcuts Taken
 

@@ -17,12 +17,16 @@ create table if not exists hotels (
   user_id uuid references profiles(id) on delete cascade not null,
   name text not null,
   city text,
+  state text,
   website_url text,
   google_place_id text,
+  google_url text,
   tripadvisor_url text,
   expedia_url text,
   booking_url text,
   airbnb_url text,
+  num_keys integer,
+  hotel_type text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()
 );

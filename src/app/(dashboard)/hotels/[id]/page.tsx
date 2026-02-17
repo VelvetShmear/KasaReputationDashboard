@@ -232,7 +232,7 @@ export default function HotelDetailPage({ params }: { params: Promise<{ id: stri
 
   // OTA links
   const links: { channel: Channel; url: string | null }[] = [
-    { channel: 'google', url: hotel.google_place_id ? `https://maps.google.com/?cid=${hotel.google_place_id}` : null },
+    { channel: 'google', url: hotel.google_url || (hotel.google_place_id ? `https://maps.google.com/?cid=${hotel.google_place_id}` : null) },
     { channel: 'tripadvisor', url: hotel.tripadvisor_url },
     { channel: 'expedia', url: hotel.expedia_url },
     { channel: 'booking', url: hotel.booking_url },
@@ -250,7 +250,10 @@ export default function HotelDetailPage({ params }: { params: Promise<{ id: stri
             </Button>
             <div>
               <h1 className="text-2xl font-bold">{hotel.name}</h1>
-              <p className="text-muted-foreground">{hotel.city || 'Unknown city'}</p>
+              <p className="text-muted-foreground">
+                {[hotel.city, hotel.state].filter(Boolean).join(', ') || 'Unknown city'}
+                {hotel.hotel_type && <span className="ml-2 text-xs bg-muted px-2 py-0.5 rounded-full">{hotel.hotel_type}</span>}
+              </p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -459,15 +462,27 @@ export default function HotelDetailPage({ params }: { params: Promise<{ id: stri
                 <span className="ml-2 font-medium">{hotel.city || '—'}</span>
               </div>
               <div>
+                <span className="text-muted-foreground">State:</span>
+                <span className="ml-2 font-medium">{hotel.state || '—'}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Hotel Type:</span>
+                <span className="ml-2 font-medium">{hotel.hotel_type || '—'}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Number of Keys:</span>
+                <span className="ml-2 font-medium">{hotel.num_keys != null ? hotel.num_keys : '—'}</span>
+              </div>
+              <div>
                 <span className="text-muted-foreground">Website:</span>
                 {hotel.website_url ? (
                   <a
                     href={hotel.website_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="ml-2 text-primary hover:underline"
+                    className="ml-2 text-primary hover:underline inline-flex items-center gap-1"
                   >
-                    Visit
+                    Visit Website <ExternalLink className="h-3 w-3" />
                   </a>
                 ) : (
                   <span className="ml-2 text-muted-foreground">—</span>
@@ -481,6 +496,34 @@ export default function HotelDetailPage({ params }: { params: Promise<{ id: stri
                 <span className="text-muted-foreground">Added:</span>
                 <span className="ml-2">{new Date(hotel.created_at).toLocaleDateString()}</span>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* OTA Links */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">OTA Links</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+              {links.map((link) => (
+                <div key={link.channel} className="flex items-center gap-2">
+                  <span className="text-muted-foreground font-medium">{CHANNEL_LABELS[link.channel]}:</span>
+                  {link.url ? (
+                    <a
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline truncate max-w-48 inline-flex items-center gap-1"
+                    >
+                      View <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                    </a>
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

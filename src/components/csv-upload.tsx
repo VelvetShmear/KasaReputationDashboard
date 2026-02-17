@@ -134,16 +134,35 @@ export function CSVUpload({ onImport }: CSVUploadProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Preview: {fileName}
-          </CardTitle>
-          <div className="flex gap-2 mt-2">
-            <Badge variant="secondary">{parsedHotels.length} rows found</Badge>
-            <Badge className="bg-emerald-100 text-emerald-800">{validCount} valid</Badge>
-            {invalidCount > 0 && (
-              <Badge variant="destructive">{invalidCount} invalid</Badge>
-            )}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <CardTitle className="text-base flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                Preview: {fileName}
+              </CardTitle>
+              <div className="flex gap-2 mt-2">
+                <Badge variant="secondary">{parsedHotels.length} rows found</Badge>
+                <Badge className="bg-emerald-100 text-emerald-800">{validCount} valid</Badge>
+                {invalidCount > 0 && (
+                  <Badge variant="destructive">{invalidCount} invalid</Badge>
+                )}
+              </div>
+            </div>
+            {/* Primary Import Button — always visible at top */}
+            <div className="flex gap-2">
+              <Button
+                size="lg"
+                onClick={handleImport}
+                disabled={importing || validCount === 0}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold shadow-md"
+              >
+                <Check className="h-4 w-4 mr-2" />
+                {importing ? 'Importing...' : `Import ${validCount} Hotels`}
+              </Button>
+              <Button variant="outline" onClick={reset}>
+                Cancel
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -187,15 +206,6 @@ export function CSVUpload({ onImport }: CSVUploadProps) {
               </TableBody>
             </Table>
           </ScrollArea>
-
-          <div className="flex gap-3 mt-4">
-            <Button onClick={handleImport} disabled={importing || validCount === 0}>
-              {importing ? 'Importing...' : `Import ${validCount} Hotels`}
-            </Button>
-            <Button variant="outline" onClick={reset}>
-              Cancel
-            </Button>
-          </div>
         </CardContent>
       </Card>
     );

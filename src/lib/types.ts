@@ -11,12 +11,16 @@ export interface Hotel {
   user_id: string;
   name: string;
   city: string | null;
+  state: string | null;
   website_url: string | null;
   google_place_id: string | null;
+  google_url: string | null;
   tripadvisor_url: string | null;
   expedia_url: string | null;
   booking_url: string | null;
   airbnb_url: string | null;
+  num_keys: number | null;
+  hotel_type: string | null;
   created_at: string;
   updated_at: string;
 }
