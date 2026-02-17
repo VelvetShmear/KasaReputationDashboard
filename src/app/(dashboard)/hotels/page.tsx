@@ -209,24 +209,15 @@ export default function HotelsPage() {
     if (selectedHotels.size === 0) return;
     if (!confirm(`Are you sure you want to delete ${selectedHotels.size} hotel${selectedHotels.size > 1 ? 's' : ''} and all their data?`)) return;
 
-    let deleted = 0;
-    let failed = 0;
-    for (const hotelId of selectedHotels) {
-      const { error } = await supabase.from('hotels').delete().eq('id', hotelId);
-      if (error) {
-        failed++;
-      } else {
-        deleted++;
-      }
-    }
+    const ids = Array.from(selectedHotels);
+    const { error } = await supabase.from('hotels').delete().in('id', ids);
 
-    if (deleted > 0) {
-      toast.success(`Deleted ${deleted} hotel${deleted > 1 ? 's' : ''}`);
+    if (error) {
+      toast.error(`Failed to delete hotels: ${error.message}`);
+    } else {
+      toast.success(`Deleted ${ids.length} hotel${ids.length > 1 ? 's' : ''}`);
       setHotels((prev) => prev.filter((h) => !selectedHotels.has(h.id)));
       setSelectedHotels(new Set());
-    }
-    if (failed > 0) {
-      toast.error(`Failed to delete ${failed} hotel${failed > 1 ? 's' : ''}`);
     }
   }
 
