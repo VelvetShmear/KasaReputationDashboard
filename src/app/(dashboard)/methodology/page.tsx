@@ -14,8 +14,8 @@ export default function MethodologyPage() {
         </CardHeader>
         <CardContent className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            This dashboard aggregates hotel review data from the &quot;Big 4&quot; channels
-            (Google, TripAdvisor, Expedia, and Booking.com), normalizes scores to a common
+            This dashboard aggregates hotel review data from 5 major channels
+            (Google, TripAdvisor, Expedia, Booking.com, and Airbnb), normalizes scores to a common
             0-10 scale, and calculates a weighted average for cross-platform comparison.
           </p>
           <div className="p-4 bg-muted/50 rounded-lg text-sm space-y-1 font-mono">
@@ -68,6 +68,13 @@ export default function MethodologyPage() {
                 <p className="text-sm text-muted-foreground">Native scale: 1-10 (via 0-4 conversion)</p>
               </div>
               <Badge variant="secondary">Score &times; 1.0 (already normalized)</Badge>
+            </div>
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div>
+                <span className="font-medium">Airbnb</span>
+                <p className="text-sm text-muted-foreground">Native scale: 1-5 stars</p>
+              </div>
+              <Badge variant="secondary">Score &times; 2.0</Badge>
             </div>
           </div>
         </CardContent>
@@ -181,6 +188,17 @@ export default function MethodologyPage() {
             </div>
           </div>
 
+            <Separator />
+            <div>
+              <h4 className="font-medium text-sm">Airbnb</h4>
+              <p className="text-sm text-muted-foreground mt-1">
+                Uses the Airbnb RapidAPI (airbnb13). Searches via <code className="text-xs bg-muted px-1 rounded">searchPlaces</code> with
+                the hotel name and city, filtering for hotel/apartment results. Resolves to a listing ID,
+                then fetches the review score (1-5 stars) and total review count. The score is normalized
+                to 0-10 by multiplying by 2.
+              </p>
+            </div>
+
           <div className="p-3 bg-amber-50 border border-amber-100 rounded-lg text-sm text-amber-800">
             <strong>Confidence Scoring:</strong> Each match is assigned a confidence level (high, medium, low)
             based on name similarity between the search query and the returned result. Low-confidence
@@ -222,6 +240,11 @@ export default function MethodologyPage() {
               <span className="text-muted-foreground">Booking.com (RapidAPI)</span>
               <span className="text-muted-foreground">0-10 (converted from 0-4)</span>
             </div>
+            <div className="grid grid-cols-3 gap-2 p-2">
+              <span>Airbnb</span>
+              <span className="text-muted-foreground">Airbnb (RapidAPI)</span>
+              <span className="text-muted-foreground">1-5 &rarr; &times;2 = 0-10</span>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -234,8 +257,8 @@ export default function MethodologyPage() {
         <CardContent className="space-y-3">
           <ul className="list-disc list-inside text-sm text-muted-foreground space-y-2">
             <li>Review data is cached for 24 hours. Re-fetching within this window returns cached data unless &quot;force refresh&quot; is used.</li>
-            <li>Hotels are processed in batches of 5 with 500ms delays between API calls to avoid rate limiting.</li>
-            <li>Each channel is fetched sequentially within a hotel (Google &rarr; TripAdvisor &rarr; Booking &rarr; Expedia) with 500ms delays between channels.</li>
+            <li>Hotels are processed in batches of 5 with 1-second delays between batches to avoid rate limiting.</li>
+            <li>Within each hotel, Google is fetched first (to resolve the official name), then TripAdvisor, Booking.com, Expedia, and Airbnb are fetched in parallel for speed.</li>
             <li>Raw API responses are stored in the database for debugging and audit purposes.</li>
             <li>Each snapshot is timestamped, allowing historical trend tracking over time.</li>
           </ul>
@@ -309,8 +332,8 @@ export default function MethodologyPage() {
           <ul className="list-disc list-inside text-sm text-muted-foreground space-y-2">
             <li>Google Places API returns at most 5 individual reviews per request, limiting the depth of AI analysis for Google-only data.</li>
             <li>TripAdvisor average is calculated from a sample of 25 reviews, not the platform&apos;s total. This may differ slightly from the displayed rating.</li>
-            <li>Date-range filtering for review scores is not implemented in this version (stretch Level 2).</li>
-            <li>Airbnb reviews are not included (stretch Level 3).</li>
+            <li>Date-range filtering for review snapshots is supported via the date picker on the Hotels and Hotel Detail pages.</li>
+            <li>Airbnb reviews are included via the Airbnb RapidAPI integration.</li>
             <li>RapidAPI rate limits may cause temporary failures during bulk fetching. The system handles this gracefully with retry-friendly error messages.</li>
           </ul>
         </CardContent>
@@ -330,7 +353,7 @@ export default function MethodologyPage() {
             <Badge>shadcn/ui</Badge>
             <Badge>Recharts</Badge>
             <Badge>Google Places API</Badge>
-            <Badge>RapidAPI (TripAdvisor, Booking.com, Hotels.com)</Badge>
+            <Badge>RapidAPI (TripAdvisor, Booking.com, Hotels.com, Airbnb)</Badge>
             <Badge>Anthropic Claude (AI Theme Analysis)</Badge>
             <Badge>Vercel (Deployment)</Badge>
           </div>

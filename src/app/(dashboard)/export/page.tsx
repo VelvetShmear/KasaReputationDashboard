@@ -62,8 +62,8 @@ export default function ExportPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Export your hotel review data as a CSV or Excel file. The export includes hotel names, cities,
-            scores for all channels, weighted averages, and group memberships.
+            Export your hotel review data as a CSV or Excel file. The export includes hotel details,
+            raw and normalized scores for all 5 channels, weighted averages, group memberships, and resolved platform names for verification.
           </p>
 
           <div className="space-y-2">
@@ -86,14 +86,15 @@ export default function ExportPage() {
           <div className="text-sm text-muted-foreground">
             <strong>Columns included:</strong>
             <ul className="list-disc list-inside mt-1 space-y-0.5">
-              <li>Hotel Name, City</li>
-              <li>Google Score & Reviews</li>
-              <li>TripAdvisor Score & Reviews</li>
-              <li>Expedia Score & Reviews</li>
-              <li>Booking.com Score & Reviews</li>
-              <li>Airbnb Score & Reviews</li>
+              <li>Hotel Name, City, State, Hotel Type, Keys</li>
+              <li>Google Score (Raw 1-5 & Normalized 0-10) & Reviews</li>
+              <li>TripAdvisor Score (Raw 1-5 & Normalized 0-10) & Reviews</li>
+              <li>Booking.com Score (0-10) & Reviews</li>
+              <li>Expedia Score (0-10) & Reviews</li>
+              <li>Airbnb Score (Raw 1-5 & Normalized 0-10) & Reviews</li>
               <li>Weighted Average Score</li>
               <li>Group Name(s)</li>
+              <li>Resolved Platform Names (Booking, Expedia, TripAdvisor)</li>
             </ul>
           </div>
 

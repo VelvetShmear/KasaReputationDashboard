@@ -230,13 +230,13 @@ export default function HotelDetailPage({ params }: { params: Promise<{ id: stri
 
   const chartDataArr = Array.from(dateMap.values());
 
-  // OTA links
+  // OTA links — prefer stored URL, fall back to constructing from IDs
   const links: { channel: Channel; url: string | null }[] = [
-    { channel: 'google', url: hotel.google_url || (hotel.google_place_id ? `https://maps.google.com/?cid=${hotel.google_place_id}` : null) },
-    { channel: 'tripadvisor', url: hotel.tripadvisor_url },
-    { channel: 'expedia', url: hotel.expedia_url },
-    { channel: 'booking', url: hotel.booking_url },
-    { channel: 'airbnb', url: hotel.airbnb_url },
+    { channel: 'google', url: hotel.google_url || (hotel.google_place_id ? `https://www.google.com/maps/place/?q=place_id:${hotel.google_place_id}` : null) },
+    { channel: 'tripadvisor', url: hotel.tripadvisor_url || null },
+    { channel: 'expedia', url: hotel.expedia_url || null },
+    { channel: 'booking', url: hotel.booking_url || null },
+    { channel: 'airbnb', url: hotel.airbnb_url || null },
   ];
 
   return (

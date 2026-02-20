@@ -12,6 +12,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 interface ParsedHotel {
   name: string;
   city: string;
+  state: string;
+  hotel_type: string;
+  num_keys: number | null;
   website_url: string;
   tripadvisor_url: string;
   expedia_url: string;
@@ -55,6 +58,9 @@ export function CSVUpload({ onImport }: CSVUploadProps) {
           // Flexible column name matching
           const name = row['Hotel Name'] || row['hotel_name'] || row['name'] || row['Name'] || row['Property Name'] || row['property_name'] || '';
           const city = row['City'] || row['city'] || row['Location'] || row['location'] || '';
+          const state = row['State'] || row['state'] || row['Province'] || row['province'] || '';
+          const hotelType = row['Hotel Type'] || row['hotel_type'] || row['Type'] || row['type'] || row['Property Type'] || '';
+          const keysStr = row['Keys'] || row['keys'] || row['Num Keys'] || row['num_keys'] || row['Rooms'] || row['rooms'] || '';
           const website = row['Website'] || row['website'] || row['Website URL'] || row['website_url'] || row['URL'] || '';
           const tripadvisor = row['TripAdvisor URL'] || row['tripadvisor_url'] || row['TripAdvisor'] || row['tripadvisor'] || '';
           const expedia = row['Expedia URL'] || row['expedia_url'] || row['Expedia'] || row['expedia'] || '';
@@ -62,10 +68,15 @@ export function CSVUpload({ onImport }: CSVUploadProps) {
 
           const trimmedName = name.trim();
           const trimmedCity = city.trim();
+          const trimmedState = state.trim();
+          const numKeys = keysStr.trim() ? parseInt(keysStr.trim(), 10) : null;
           const valid = trimmedName.length > 0;
           return {
             name: trimmedName ? toTitleCase(trimmedName) : '',
             city: trimmedCity ? toTitleCase(trimmedCity) : '',
+            state: trimmedState ? toTitleCase(trimmedState) : '',
+            hotel_type: hotelType.trim(),
+            num_keys: numKeys && !isNaN(numKeys) ? numKeys : null,
             website_url: website.trim(),
             tripadvisor_url: tripadvisor.trim(),
             expedia_url: expedia.trim(),
@@ -221,7 +232,7 @@ export function CSVUpload({ onImport }: CSVUploadProps) {
           <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
           <h3 className="font-semibold">Upload CSV File</h3>
           <p className="text-sm text-muted-foreground mt-1">
-            Expected columns: Hotel Name, City, Website (optional), TripAdvisor URL (optional), Booking URL (optional), Expedia URL (optional)
+            Expected columns: Hotel Name, City, State (optional), Hotel Type (optional), Keys (optional), Website (optional), TripAdvisor URL (optional), Booking URL (optional), Expedia URL (optional)
           </p>
           <Button variant="outline" className="mt-4">
             Choose File

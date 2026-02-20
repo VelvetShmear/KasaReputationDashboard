@@ -178,36 +178,43 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Update hotel with resolved IDs/URLs
-      if (result.channel === 'google' && result.raw_response?.placeId && !hotel.google_place_id) {
-        await supabase
-          .from('hotels')
-          .update({ google_place_id: result.raw_response.placeId as string })
-          .eq('id', hotel_id);
+      // Update hotel with resolved IDs/URLs (always update URLs to keep them fresh)
+      if (result.channel === 'google') {
+        const updates: Record<string, string> = {};
+        if (result.raw_response?.placeId && !hotel.google_place_id) {
+          updates.google_place_id = result.raw_response.placeId as string;
+        }
+        // Always store the Google Maps URL from the API (most reliable link)
+        if (result.url) {
+          updates.google_url = result.url;
+        }
+        if (Object.keys(updates).length > 0) {
+          await supabase.from('hotels').update(updates).eq('id', hotel_id);
+        }
       }
 
-      if (result.channel === 'tripadvisor' && result.url && !hotel.tripadvisor_url) {
+      if (result.channel === 'tripadvisor' && result.url) {
         await supabase
           .from('hotels')
           .update({ tripadvisor_url: result.url })
           .eq('id', hotel_id);
       }
 
-      if (result.channel === 'booking' && result.url && !hotel.booking_url) {
+      if (result.channel === 'booking' && result.url) {
         await supabase
           .from('hotels')
           .update({ booking_url: result.url })
           .eq('id', hotel_id);
       }
 
-      if (result.channel === 'expedia' && result.url && !hotel.expedia_url) {
+      if (result.channel === 'expedia' && result.url) {
         await supabase
           .from('hotels')
           .update({ expedia_url: result.url })
           .eq('id', hotel_id);
       }
 
-      if (result.channel === 'airbnb' && result.url && !hotel.airbnb_url) {
+      if (result.channel === 'airbnb' && result.url) {
         await supabase
           .from('hotels')
           .update({ airbnb_url: result.url })

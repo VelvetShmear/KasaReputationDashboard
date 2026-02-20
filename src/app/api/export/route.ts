@@ -52,46 +52,64 @@ export async function GET(request: NextRequest) {
       .select('hotel_id, groups(name)')
       .in('hotel_id', filteredHotelIds);
 
-    // Build data
+    // Build data — extended columns matching Kasa format
     const headers = [
+      '#',
       'Hotel Name',
       'City',
-      'Google Score',
-      'Google Reviews',
-      'TripAdvisor Score',
-      'TripAdvisor Reviews',
-      'Expedia Score',
-      'Expedia Reviews',
+      'State',
+      'Hotel Type',
+      'Keys',
+      'Google Score (Raw)',
+      'Google Score (0-10)',
+      '# Google Reviews',
+      'TripAdvisor Score (Raw)',
+      'TripAdvisor Score (0-10)',
+      '# TripAdvisor Reviews',
       'Booking Score',
-      'Booking Reviews',
-      'Airbnb Score',
-      'Airbnb Reviews',
+      '# Booking Reviews',
+      'Expedia Score',
+      '# Expedia Reviews',
+      'Airbnb Score (Raw)',
+      'Airbnb Score (0-10)',
+      '# Airbnb Reviews',
       'Weighted Average',
       'Group Name(s)',
+      'Booking Name',
+      'Expedia Name',
+      'TripAdvisor Name',
     ];
 
     const channels: Channel[] = ['google', 'tripadvisor', 'expedia', 'booking', 'airbnb'];
 
     const rows = hotels
       .filter((h) => filteredHotelIds.includes(h.id))
-      .map((hotel) => {
+      .map((hotel, index) => {
         const hotelSnapshots = (snapshots || []).filter((s) => s.hotel_id === hotel.id);
 
-        const scores: Record<Channel, { normalized_score: number | null; total_reviews: number | null }> = {} as Record<Channel, { normalized_score: number | null; total_reviews: number | null }>;
         const channelScores: Record<string, { average_score: number | null; normalized_score: number | null; total_reviews: number | null; fetched_at: string | null }> = {};
+        // Extract resolved platform names from raw_response
+        const resolvedNames: Record<string, string> = {};
 
         for (const ch of channels) {
           const latest = hotelSnapshots.find((s) => s.channel === ch);
-          scores[ch] = {
-            normalized_score: latest?.normalized_score ?? null,
-            total_reviews: latest?.total_reviews ?? null,
-          };
           channelScores[ch] = {
             average_score: latest?.average_score ?? null,
             normalized_score: latest?.normalized_score ?? null,
             total_reviews: latest?.total_reviews ?? null,
             fetched_at: latest?.fetched_at ?? null,
           };
+
+          // Extract resolved name from raw_response for verification
+          if (latest?.raw_response) {
+            const raw = latest.raw_response as Record<string, unknown>;
+            const details = raw.details as Record<string, unknown> | undefined;
+            resolvedNames[ch] =
+              (raw.hotelName as string) ||
+              (details?.name as string) ||
+              (raw.listingName as string) ||
+              '';
+          }
         }
 
         const weightedAvg = calculateWeightedAverage({
@@ -112,20 +130,36 @@ export async function GET(request: NextRequest) {
           .join('; ');
 
         return [
+          (index + 1).toString(),
           hotel.name,
           hotel.city || '',
-          scores.google?.normalized_score?.toFixed(1) || '',
-          scores.google?.total_reviews?.toString() || '',
-          scores.tripadvisor?.normalized_score?.toFixed(1) || '',
-          scores.tripadvisor?.total_reviews?.toString() || '',
-          scores.expedia?.normalized_score?.toFixed(1) || '',
-          scores.expedia?.total_reviews?.toString() || '',
-          scores.booking?.normalized_score?.toFixed(1) || '',
-          scores.booking?.total_reviews?.toString() || '',
-          scores.airbnb?.normalized_score?.toFixed(1) || '',
-          scores.airbnb?.total_reviews?.toString() || '',
+          hotel.state || '',
+          hotel.hotel_type || '',
+          hotel.num_keys != null ? hotel.num_keys.toString() : '',
+          // Google: raw (1-5) and normalized (0-10)
+          channelScores.google?.average_score?.toFixed(1) || '',
+          channelScores.google?.normalized_score?.toFixed(1) || '',
+          channelScores.google?.total_reviews?.toString() || '',
+          // TripAdvisor: raw (1-5) and normalized (0-10)
+          channelScores.tripadvisor?.average_score?.toFixed(1) || '',
+          channelScores.tripadvisor?.normalized_score?.toFixed(1) || '',
+          channelScores.tripadvisor?.total_reviews?.toString() || '',
+          // Booking: already 0-10 scale
+          channelScores.booking?.normalized_score?.toFixed(1) || '',
+          channelScores.booking?.total_reviews?.toString() || '',
+          // Expedia: already 0-10 scale
+          channelScores.expedia?.normalized_score?.toFixed(1) || '',
+          channelScores.expedia?.total_reviews?.toString() || '',
+          // Airbnb: raw (1-5) and normalized (0-10)
+          channelScores.airbnb?.average_score?.toFixed(1) || '',
+          channelScores.airbnb?.normalized_score?.toFixed(1) || '',
+          channelScores.airbnb?.total_reviews?.toString() || '',
           weightedAvg?.toFixed(2) || '',
           groups,
+          // Resolved platform names for verification
+          resolvedNames.booking || '',
+          resolvedNames.expedia || '',
+          resolvedNames.tripadvisor || '',
         ];
       });
 

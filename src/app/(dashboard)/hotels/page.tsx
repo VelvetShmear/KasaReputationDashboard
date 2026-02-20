@@ -140,7 +140,7 @@ export default function HotelsPage() {
     loadHotels();
   }, [loadHotels]);
 
-  async function handleCSVImport(csvHotels: { name: string; city: string; website_url: string; tripadvisor_url: string; expedia_url: string; booking_url: string }[]) {
+  async function handleCSVImport(csvHotels: { name: string; city: string; state?: string; hotel_type?: string; num_keys?: number | null; website_url: string; tripadvisor_url: string; expedia_url: string; booking_url: string }[]) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -148,6 +148,9 @@ export default function HotelsPage() {
       user_id: user.id,
       name: h.name ? toTitleCase(h.name) : h.name,
       city: h.city ? toTitleCase(h.city) : null,
+      state: h.state || null,
+      hotel_type: h.hotel_type || null,
+      num_keys: h.num_keys ?? null,
       website_url: h.website_url || null,
       tripadvisor_url: h.tripadvisor_url || null,
       expedia_url: h.expedia_url || null,
@@ -598,20 +601,29 @@ export default function HotelsPage() {
                   )}
                 </div>
 
-                {/* Bulk Delete Bar */}
+                {/* Batch Delete Bar (Top) */}
                 {selectedHotels.size > 0 && (
-                  <div className="flex items-center justify-between p-3 mb-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                    <span className="text-sm font-medium text-destructive">
+                  <div className="flex items-center justify-between p-3 mb-4 bg-destructive/5 border border-destructive/20 rounded-lg">
+                    <span className="text-sm font-medium">
                       {selectedHotels.size} hotel{selectedHotels.size > 1 ? 's' : ''} selected
                     </span>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={handleBulkDelete}
-                    >
-                      <Trash2 className="h-4 w-4 mr-2" />
-                      Delete Selected
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSelectedHotels(new Set())}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={handleBulkDelete}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Selected
+                      </Button>
+                    </div>
                   </div>
                 )}
 
@@ -621,7 +633,7 @@ export default function HotelsPage() {
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="w-10">
+                          <TableHead className="w-12 px-3">
                             <Checkbox
                               checked={allSelected}
                               onCheckedChange={toggleSelectAll}
@@ -636,24 +648,24 @@ export default function HotelsPage() {
                           <SortableHeader field="booking">Booking</SortableHeader>
                           <SortableHeader field="airbnb">Airbnb</SortableHeader>
                           <SortableHeader field="weighted_average">Weighted Avg</SortableHeader>
-                          <TableHead className="w-10"></TableHead>
+                          <TableHead className="w-14 min-w-[56px]"></TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {filteredHotels.map((hotel) => (
                           <TableRow
                             key={hotel.id}
-                            className={`cursor-pointer hover:bg-muted/50 ${selectedHotels.has(hotel.id) ? 'bg-muted/30' : ''}`}
+                            className={`cursor-pointer hover:bg-muted/50 ${selectedHotels.has(hotel.id) ? 'bg-primary/5' : ''}`}
                             onClick={() => router.push(`/hotels/${hotel.id}`)}
                           >
-                            <TableCell onClick={(e) => e.stopPropagation()}>
+                            <TableCell className="px-3" onClick={(e) => e.stopPropagation()}>
                               <Checkbox
                                 checked={selectedHotels.has(hotel.id)}
                                 onCheckedChange={() => toggleSelectHotel(hotel.id)}
                                 aria-label={`Select ${hotel.name}`}
                               />
                             </TableCell>
-                            <TableCell className="font-medium">{hotel.name}</TableCell>
+                            <TableCell className="font-medium max-w-[250px] truncate">{hotel.name}</TableCell>
                             <TableCell className="text-muted-foreground">{hotel.city || '—'}</TableCell>
                             <TableCell>
                               <ScoreBadge channel="google" score={hotel.scores.google} />
@@ -671,15 +683,15 @@ export default function HotelsPage() {
                               <ScoreBadge channel="airbnb" score={hotel.scores.airbnb} />
                             </TableCell>
                             <TableCell>
-                              <div className={`text-center font-bold ${getScoreColor(hotel.weighted_average)}`}>
+                              <div className={`text-center font-bold text-base ${getScoreColor(hotel.weighted_average)}`}>
                                 {formatScore(hotel.weighted_average)}
                               </div>
                             </TableCell>
-                            <TableCell>
+                            <TableCell className="px-3">
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                className="h-8 w-8 text-muted-foreground hover:text-destructive flex-shrink-0"
                                 onClick={(e) => handleDeleteHotel(hotel.id, e)}
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -691,6 +703,37 @@ export default function HotelsPage() {
                     </Table>
                   </ScrollArea>
                 </Card>
+
+                {/* Bottom spacer when sticky footer is visible */}
+                {selectedHotels.size > 0 && <div className="h-16" />}
+
+                {/* Sticky Batch Delete Footer */}
+                {selectedHotels.size > 0 && (
+                  <div className="fixed bottom-0 left-0 right-0 z-50 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 shadow-lg">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+                      <span className="text-sm font-medium">
+                        {selectedHotels.size} hotel{selectedHotels.size > 1 ? 's' : ''} selected
+                      </span>
+                      <div className="flex items-center gap-3">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedHotels(new Set())}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={handleBulkDelete}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Selected
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </>
             )}
           </TabsContent>
